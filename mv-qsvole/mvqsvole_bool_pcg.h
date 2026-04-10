@@ -5,11 +5,15 @@
 #include "emp-agmpc/netmp.h"
 #include "emp-agmpc/helper.h"
 #include "emp-tool/utils/block.h"
-
+#include "emp-tool/circuits/circuit_file.h"
+#include "emp-tool/utils/f2k.h"
+#include <vector>
+#include <cstring>
 
 using namespace std;
+using namespace emp;
 
-// mv-svole over binary field via ProgFerretCOT (PCG-style)
+// mv-qsvole over binary field via ProgFerretCOT (PCG-style)
 template<int nP>
 class MVSVOLEBOOL_PCG { public:
 	FerretCOT<NetIO> * ferret[nP+1];
@@ -71,21 +75,6 @@ class MVSVOLEBOOL_PCG { public:
 				}));
 			}
 			joinNclean(res);
-
-            // vector<future<void>> res;
-			// for (int i = 2; i<=nP; ++i){
-			// 	int party2 = i;
-			// 	res.push_back(pool->enqueue([this, output, length, party2]() {
-			// 		ferret[party2]->rcot(output[party2], length);
-			// 		io->flush(party2);
-			// 	}));
-			// }
-			// joinNclean(res);
-
-            // for(int i = 0; i < length; ++i){
-            //     data[i] = getLSB(output[2][i]);
-            // }
-
         
 		}
 		else{
@@ -186,7 +175,7 @@ class MVSVOLEBOOL_PCG { public:
                     flag = false;
             }
             if (!flag)
-                cout << "Consistency checks for mv-svole fail" << endl;
+                cout << "Consistency checks for mv-qsvole fail" << endl;
         }
 
     }

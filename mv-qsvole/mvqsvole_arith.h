@@ -8,6 +8,7 @@
 #include "emp-agmpc/helper.h"
 #include "prog_vole.h"
 #include <cstdint>
+#include <vector>
 
 using namespace std;
 
@@ -71,21 +72,22 @@ class MVVOLEarith { public:
 			// obtains authenticated values and corresponding MAC tags
 			// output[i] = u[i] || MAC_tag[i]
 			vector<future<void>> res;
+			res.reserve((size_t)(nP - 1));
 			for (int i = 2; i<=nP; ++i){
 				int party2 = i;
 				res.push_back(pool->enqueue([this, output, length, party2]() {
 					vole[party2]->extend_with_seed(output[party2], length);
-					// debug
-					// vole[party2]->check_triple(0, output[party2], length);
+
 				}));
 			}
 			joinNclean(res);
 		}
 		else{
 			vole[1]->extend_with_seed(output[1], length);
-			// debug
-			// vole[1]->check_triple(Delta, output[1], length);
+		
 		}
+		io->flush();
+		io->sync();
 	}
 
 	// supposed that the length is already increased by 1! I.e, length := length + 1
@@ -97,12 +99,12 @@ class MVVOLEarith { public:
 
 		// malicious security: by adding the following consistency check
 		block seed = sampleRandom(io, &prg, pool, party); 
-		uint64_t * s = new uint64_t[length];
+		vector<uint64_t> s((size_t)length);
 		PRG prg2(&seed);
-		prg2.random_data(s, length*sizeof(uint64_t));
+		prg2.random_data(s.data(), (int)(s.size() * sizeof(uint64_t)));
 
 		for(int i = 0; i < length; ++i){
-			s[i] = mod(s[i], PR);
+			s[i] = mod(s[i]);
 		}
 		
 		uint64_t u;
@@ -117,18 +119,19 @@ class MVVOLEarith { public:
 
 			uint64_t tmpu, tmpm;
 			for (int i = 0; i <length; ++i){
-				// for any party >=2, High64(output[party]) is the authenticated value
-				tmpu = mult_mod(s[i], output[2][i]>>64);
-
+				const uint64_t si = s[i];
+				const uint64_t v2 = HIGH64(output[2][i]);
+				tmpu = mult_mod(si, v2);
 				u = add_mod(u, tmpu);
 
 				for(int j = 2; j <= nP; ++j){	
-					tmpm = mult_mod(LOW64(output[j][i]), s[i]);
+					tmpm = mult_mod(LOW64(output[j][i]), si);
 					tmpM[j] = add_mod(tmpM[j], tmpm);
 				}
 			}	
 			// send u and tmpM to verifiers
 			vector<future<void>> res2;
+			res2.reserve((size_t)(nP - 1));
 			for (int i = 2; i<=nP; ++i){
 				int party2 = i;
 				res2.push_back(pool->enqueue([this, u, tmpM, party2]() {
@@ -142,10 +145,17 @@ class MVVOLEarith { public:
 		}
 		else{
 			// compute check_key for party 1
-			uint64_t tmpk;
 			uint64_t check_key = 0;
-			for(int i = 0; i <length; ++i){
-				tmpk = mod(output[1][i], pr);
+			int i = 0;
+			for (; i + 1 < length; i += 2) {
+				uint64_t a[2] = { mod(output[1][i], pr), mod(output[1][i + 1], pr) };
+				uint64_t b[2] = { s[i], s[i + 1] };
+				uint64_t r[2];
+				mult_mod_bch2(r, a, b);
+				check_key = add_mod(check_key, add_mod(r[0], r[1]));
+			}
+			for (; i < length; ++i) {
+				uint64_t tmpk = mod(output[1][i], pr);
 				tmpk = mult_mod(s[i], tmpk);
 				check_key = add_mod(check_key, tmpk);
 			}
@@ -162,8 +172,6 @@ class MVVOLEarith { public:
 			if (check_mac != tmpM[1])
 				cout << "Consistency check for MV-sVOLE fails!" << endl;
 		}
-
-		delete[] s;
 	}
 
 	/* debug functions */

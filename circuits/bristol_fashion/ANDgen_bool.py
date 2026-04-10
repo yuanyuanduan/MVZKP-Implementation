@@ -1,5 +1,5 @@
-file = open('ands.txt', 'w', encoding = 'utf-8')
-num_ands = 10000000
+file = open('ands_bool.txt', 'w', encoding = 'utf-8')
+num_ands = 10000
 file.write(str(num_ands))
 file.write(" ")
 file.write(str(num_ands+2))

@@ -2,13 +2,13 @@
 
 #include <emp-tool/emp-tool.h>
 #include "emp-agmpc/emp-agmpc.h"
-#include "sif/test_sif.h"
+#include "mvzkp/test_mvzkp.h"
 
 const string circuits_location = string("../circuits/bristol_fashion/");
 using namespace std;
 using namespace emp;
 
-const static int nP = 3;
+const static int nP = 4;
 int party, port;
 int main(int argc, char** argv) {
 	parse_party_and_port(argv, &party, &port);
@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
 	if (party == 1){
 		cout << "Evaluate Boolean Circuit" << endl;
 	}
-	sif_1r_bool_iknp_bench_once<nP>(party, ios, &pool, circuits_location+"sha256.txt");
+	mvzkp_bool_iknp_bench_once<nP>(party, ios, &pool, circuits_location+"sha256.txt");
 
 	return 0;
 }
