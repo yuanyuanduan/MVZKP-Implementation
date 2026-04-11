@@ -1,5 +1,5 @@
 build/
 
-# OpenSSL upstream sample keys (trigger GitHub push protection; not real secrets)
+# OpenSSL sample PEMs under demos/ trigger GitHub push protection; not needed to build libcrypto
+third_party/openssl-1.1.1w/demos/
 third_party/openssl-1.1.1w/apps/rsa8192.pem
-third_party/openssl-1.1.1w/demos/smime/cakey.pem
