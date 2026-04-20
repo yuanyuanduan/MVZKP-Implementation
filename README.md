@@ -72,6 +72,14 @@ For runs across machines or beyond the default maximum party count, edit **`thir
 
 The sample command in `script/batchrun.sh` may not match the current default `nP` or script choice; align `run_3` / `run_4` and output paths with your `nP` before use.
 
+## Acknowledgments
+This project is built upon the initial framework work by **Zhelelei Zhou**. 
+
+We have significantly extended and optimized the codebase to support our new **1-round MVZK protocol**. Key contributions of this version include:
+* **Protocol Logic:** Complete redesign of the verification phase to achieve 1-round complexity.
+* **Optimization:** Elimination of extension-field multiplications, reducing overhead from $4n$ to $0$.
+* **Benchmark:** Comprehensive evaluation on Boolean and Arithmetic circuits.
+
 ## License
 
 See [LICENSE](LICENSE) in the repository root (MIT).
